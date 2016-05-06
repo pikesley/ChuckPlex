@@ -10,19 +10,20 @@ int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount);
 int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount);
 
 void setup() {
- // chuck1.wiring();
- // chuck0.debug(true);
- // chuck1.debug(true);
- // reverseChuck0.debug(true);
- // reverseChuck1.debug(true);
+  chuck0.sleep = SLEEP;
+  chuck1.sleep = SLEEP;
+  reverseChuck0.sleep = SLEEP;
+  reverseChuck1.sleep = SLEEP;
 }
 
 void loop() {
-  //simple();
-  //chase();
-  //flail();
-  //halfBounce();
+  simple();
+  chase();
+  flail();
+  halfBounce();
   fullBounce();
+  swing();
+  halfChase();
 }
 
 void simple() {
@@ -31,6 +32,12 @@ void simple() {
 
 void chase() {
   parallel(chuck0, reverseChuck1);
+}
+
+void halfChase() {
+  simple();
+  chase();
+  chase();
 }
 
 void flail() {
@@ -46,6 +53,20 @@ void halfBounce() {
 void fullBounce() {
   serial(chuck0, reverseChuck1);
   serial(chuck1, reverseChuck0);
+}
+
+void swing() {
+  parallel(chuck0, reverseChuck1);
+  parallel(reverseChuck0, chuck1);
+  parallel(chuck0, reverseChuck1);
+  parallel(chuck0, reverseChuck1);
+  parallel(chuck0, reverseChuck1);
+
+  parallel(chuck1, reverseChuck0);
+  parallel(reverseChuck1, chuck0);
+  parallel(chuck1, reverseChuck0);
+  parallel(chuck1, reverseChuck0);
+  parallel(chuck1, reverseChuck0);
 }
 
 // generics
@@ -71,6 +92,8 @@ void parallel(Chuck first, Chuck second) {
     Serial.println(second.lightLed(i));
     delay(SLEEP);
   }
+  first.resetPins();
+  second.resetPins();
 }
 
 /*void roller(int width) {
