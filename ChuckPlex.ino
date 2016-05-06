@@ -1,131 +1,96 @@
-#define SLEEP 20
-#define DEBUG 0
-#define PATTERN 1
+#include <Chuck.h>
 
-int pins[] = { 3, 4, 5, 6 };
-int pinCount = 4;
-int lights = 12;
+#define SLEEP 50
+
+int pinCount = 3;
+
+int pins0[]        = {  3,  4,  5 }; Chuck chuck0(pins0, pinCount);
+int reversePins0[] = {  5,  4,  3 }; Chuck reverseChuck0(reversePins0, pinCount);
+int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount);
+int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount);
 
 void setup() {
-  if (DEBUG == 1) {
-    Serial.begin(9600);
-  }
-  inputise();
+ // chuck1.wiring();
+ // chuck0.debug(true);
+ // chuck1.debug(true);
+ // reverseChuck0.debug(true);
+ // reverseChuck1.debug(true);
 }
 
 void loop() {
-  switch (PATTERN) { 
-    case 0:   
-      simple();
-      break;
-
-    case 1:
-      roller(3);
-      break;
-  }
+  //simple();
+  //chase();
+  //flail();
+  //halfBounce();
+  fullBounce();
 }
 
 void simple() {
-  for (int i = 0; i < lights; i++) {
-    lightLED(i);
+  serial(chuck0, reverseChuck1);
+}
+
+void chase() {
+  parallel(chuck0, reverseChuck1);
+}
+
+void flail() {
+  parallel(chuck0, reverseChuck1);
+  parallel(reverseChuck0, chuck1);
+}
+
+void halfBounce() {
+  parallel(chuck0, chuck1);
+  parallel(reverseChuck0, reverseChuck1);
+}
+
+void fullBounce() {
+  serial(chuck0, reverseChuck1);
+  serial(chuck1, reverseChuck0);
+}
+
+// generics
+
+void serial(Chuck first, Chuck second) {
+  for (int i = 0; i < first.lights; i++) {
+    Serial.println(first.lightLed(i));
+    delay(SLEEP);
+  }
+  first.resetPins();
+  
+
+  for (int i = 0; i < second.lights; i++) {
+    Serial.println(second.lightLed(i));
+    delay(SLEEP);
+  }
+  second.resetPins();
+}
+
+void parallel(Chuck first, Chuck second) {
+    for (int i = 0; i < first.lights; i++) {
+    Serial.println(first.lightLed(i));
+    Serial.println(second.lightLed(i));
     delay(SLEEP);
   }
 }
 
-void roller(int width) {
+/*void roller(int width) {
   int counter = 0;
-  int a[lights];
-  for (int j = 0; j < lights; j++) {
-    for (int i = 0; i < lights; i++) {
+  int a[chuck.lights];
+  for (int j = 0; j < chuck.lights; j++) {
+    for (int i = 0; i < chuck.lights; i++) {
       a[i] = 0;
       int offset = counter + width;
       if (i >= counter && i < offset) {
         a[i] = 1;
       }
-      if (offset > lights) {
-        for (int k = 0; k < offset - lights; k++) {
+      if (offset > chuck.lights) {
+        for (int k = 0; k < offset - chuck.lights; k++) {
           a[k] = 1;
         }
       }
     }
-    lightElements(a, width);
+    chuck.lightSeveral(a, width);
     counter++;
     delay(SLEEP);
   }
-}
-
-void lightElements(int list[], int width) {
-  for (int t = 0; t < round(float(SLEEP) / float(width)); t++) {
-    for (int i = 0; i < lights; i++) {
-      if (list[i] == 1) {
-        lightLED(i);
-        delay(1);
-      }
-    }
-  }
-}
-
-void inputise() {
-  for (int i = 0; i < pinCount; i++) {
-    pinMode(pins[i], INPUT);
-  }
-}
-
-void resetPins() {
-  inputise();
-  for (int i = 0; i < pinCount; i++) {
-    digitalWrite(pins[i], LOW);
-  }
-}
-
-void setPins(int highIndex, int lowIndex) {
-  if (DEBUG == 1) {
-    Serial.print(pins[highIndex]);
-    Serial.print(" HIGH, ");
-    Serial.print(pins[lowIndex]);
-    Serial.println(" LOW");
-  }
-  resetPins();
-
-  pinMode(pins[highIndex], OUTPUT);
-  pinMode(pins[lowIndex], OUTPUT);
-
-  digitalWrite(pins[highIndex], HIGH);
-  digitalWrite(pins[lowIndex], LOW);
-}
-
-void lightLED(int index) {
-  int bracket = lights / pinCount;
-  int left = index / bracket;
-  if (DEBUG == 1) {
-    Serial.print(bracket);
-    Serial.print(", ");
-    Serial.print(index);
-    Serial.print(" ... ");
-  }
-
-  int valids[pinCount - 1];
-  int bump = 0;
- 
-  for (int i = 0; i < pinCount - 1; i++) {
-    if (i == left) {
-      bump = 1;
-    }
-
-    valids[i] = i + bump;
-  }
-
-  int right = valids[index % (pinCount - 1)];
-  if (DEBUG == 1) {
-    Serial.print(left);
-    Serial.print(" - [ ");
-    Serial.print(valids[0]);
-    Serial.print(", ");
-    Serial.print(valids[1]);
-    Serial.print(" ] ");
-  }
-
-  setPins(left, right);
-}
-
-
+}*/
