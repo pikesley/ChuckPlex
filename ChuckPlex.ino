@@ -9,7 +9,12 @@ int reversePins0[] = {  5,  4,  3 }; Chuck reverseChuck0(reversePins0, pinCount)
 int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount);
 int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount);
 
+int mode = 5;
+
 void setup() {
+  Serial.begin(9600);
+  pinMode(2, INPUT_PULLUP);
+
   chuck0.sleep = SLEEP;
   chuck1.sleep = SLEEP;
   reverseChuck0.sleep = SLEEP;
@@ -17,17 +22,45 @@ void setup() {
 }
 
 void loop() {
-  simple();
-  chase();
-  flail();
-  halfBounce();
-  fullBounce();
-  swing();
-  halfChase();
+  int button = digitalRead(2);
+  if (button == LOW) {
+    Serial.println("Change");
+    mode++;
+    if (mode > 5) {
+      mode = 0; 
+    }
+  }
+  switch (mode) {
+    case 0:
+      simple();
+      break;
+    case 1:
+      chase();
+      break;
+    case 2:
+      flail();
+      break;
+    case 3:
+      swing(3);
+      break;
+    case 4:
+      halfChase();
+      break;
+    case 5:
+      chaos();
+      break;
+  }
 }
 
 void simple() {
   serial(chuck0, reverseChuck1);
+}
+
+void chaos() {
+  chuck0.lightLed(random(7));
+  delay(SLEEP);
+  chuck1.lightLed(random(7));
+  delay(SLEEP);
 }
 
 void chase() {
@@ -55,18 +88,18 @@ void fullBounce() {
   serial(chuck1, reverseChuck0);
 }
 
-void swing() {
+void swing(int times) {
   parallel(chuck0, reverseChuck1);
   parallel(reverseChuck0, chuck1);
-  parallel(chuck0, reverseChuck1);
-  parallel(chuck0, reverseChuck1);
-  parallel(chuck0, reverseChuck1);
+  for (int i = 0; i < times * 2; i++) {
+    parallel(chuck0, reverseChuck1);
+  }
 
   parallel(chuck1, reverseChuck0);
   parallel(reverseChuck1, chuck0);
-  parallel(chuck1, reverseChuck0);
-  parallel(chuck1, reverseChuck0);
-  parallel(chuck1, reverseChuck0);
+  for (int i = 0; i < times * 2; i++) {
+    parallel(chuck1, reverseChuck0);
+  }
 }
 
 // generics
