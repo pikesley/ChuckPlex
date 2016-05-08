@@ -9,7 +9,7 @@ int reversePins0[] = {  5,  4,  3 }; Chuck reverseChuck0(reversePins0, pinCount)
 int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount);
 int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount);
 
-int mode = 5;
+int mode = 3;
 
 void setup() {
   Serial.begin(9600);
@@ -26,8 +26,8 @@ void loop() {
   if (button == LOW) {
     Serial.println("Change");
     mode++;
-    if (mode > 5) {
-      mode = 0; 
+    if (mode > 6) {
+      mode = 0;
     }
   }
   switch (mode) {
@@ -41,13 +41,16 @@ void loop() {
       flail();
       break;
     case 3:
-      swing(3);
+      swing();
       break;
     case 4:
       halfChase();
       break;
     case 5:
       chaos();
+      break;
+    case 6:
+      crawler(3);
       break;
   }
 }
@@ -56,11 +59,33 @@ void simple() {
   serial(chuck0, reverseChuck1);
 }
 
+void crawler(int width) {
+  int a[chuck0.lights];
+  for (int i = 0; i < chuck0.lights; i++) {
+
+    for (int j = 0; j < chuck0.lights; j++) {
+      a[j] = 0;
+    }
+
+    for (int k = i; k < i + width; k++) {
+      a[k] = 1;
+      if (k > chuck0.lights - width) {
+        a[k - chuck0.lights] = 1;
+      }
+    }
+
+    chuck0.lightSeveral(a);
+    reverseChuck1.lightSeveral(a);
+
+    delay(SLEEP);
+  }
+}
+
 void chaos() {
   chuck0.lightLed(random(7));
-  delay(SLEEP);
+  delay(SLEEP / 2);
   chuck1.lightLed(random(7));
-  delay(SLEEP);
+  delay(SLEEP / 2);
 }
 
 void chase() {
@@ -88,16 +113,20 @@ void fullBounce() {
   serial(chuck1, reverseChuck0);
 }
 
-void swing(int times) {
-  parallel(chuck0, reverseChuck1);
-  parallel(reverseChuck0, chuck1);
-  for (int i = 0; i < times * 2; i++) {
+void swing() {
+  for (int i = 0; i < random(4) + 2; i++) {
+    parallel(chuck0, reverseChuck1);
+    parallel(reverseChuck0, chuck1);
+  }
+  for (int i = 0; i < random(10) + 2; i++) {
     parallel(chuck0, reverseChuck1);
   }
 
-  parallel(chuck1, reverseChuck0);
-  parallel(reverseChuck1, chuck0);
-  for (int i = 0; i < times * 2; i++) {
+  for (int i = 0; i < random(4) + 2; i++) {
+    parallel(chuck1, reverseChuck0);
+    parallel(reverseChuck1, chuck0);
+  }
+  for (int i = 0; i < random(10 + 2); i++) {
     parallel(chuck1, reverseChuck0);
   }
 }
@@ -110,7 +139,6 @@ void serial(Chuck first, Chuck second) {
     delay(SLEEP);
   }
   first.resetPins();
-  
 
   for (int i = 0; i < second.lights; i++) {
     Serial.println(second.lightLed(i));
@@ -120,7 +148,7 @@ void serial(Chuck first, Chuck second) {
 }
 
 void parallel(Chuck first, Chuck second) {
-    for (int i = 0; i < first.lights; i++) {
+  for (int i = 0; i < first.lights; i++) {
     Serial.println(first.lightLed(i));
     Serial.println(second.lightLed(i));
     delay(SLEEP);
@@ -128,25 +156,3 @@ void parallel(Chuck first, Chuck second) {
   first.resetPins();
   second.resetPins();
 }
-
-/*void roller(int width) {
-  int counter = 0;
-  int a[chuck.lights];
-  for (int j = 0; j < chuck.lights; j++) {
-    for (int i = 0; i < chuck.lights; i++) {
-      a[i] = 0;
-      int offset = counter + width;
-      if (i >= counter && i < offset) {
-        a[i] = 1;
-      }
-      if (offset > chuck.lights) {
-        for (int k = 0; k < offset - chuck.lights; k++) {
-          a[k] = 1;
-        }
-      }
-    }
-    chuck.lightSeveral(a, width);
-    counter++;
-    delay(SLEEP);
-  }
-}*/
