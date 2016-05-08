@@ -2,34 +2,33 @@
 
 #define SLEEP 50
 
+const int buttonPin = 2;
+volatile int changeMode = false;
+
 int pinCount = 3;
 
-int pins0[]        = {  3,  4,  5 }; Chuck chuck0(pins0, pinCount);
-int reversePins0[] = {  5,  4,  3 }; Chuck reverseChuck0(reversePins0, pinCount);
-int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount);
-int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount);
+int pins0[]        = {  3,  4,  5 }; Chuck chuck0(pins0, pinCount, SLEEP);
+int reversePins0[] = {  5,  4,  3 }; Chuck reverseChuck0(reversePins0, pinCount, SLEEP);
+int pins1[]        = {  8,  9, 10 }; Chuck chuck1(pins1, pinCount, SLEEP);
+int reversePins1[] = { 10,  9,  8 }; Chuck reverseChuck1(reversePins1, pinCount, SLEEP);
 
-int mode = 3;
+int mode = 6;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(2, INPUT_PULLUP);
-
-  chuck0.sleep = SLEEP;
-  chuck1.sleep = SLEEP;
-  reverseChuck0.sleep = SLEEP;
-  reverseChuck1.sleep = SLEEP;
+  pinMode(buttonPin, INPUT_PULLUP);
+  attachInterrupt(0, pin_ISR, FALLING);
 }
 
 void loop() {
-  int button = digitalRead(2);
-  if (button == LOW) {
-    Serial.println("Change");
+  if (changeMode) {
     mode++;
-    if (mode > 6) {
+    changeMode = false;
+    if (mode > 7) {
       mode = 0;
     }
   }
+
   switch (mode) {
     case 0:
       simple();
@@ -52,7 +51,14 @@ void loop() {
     case 6:
       crawler(3);
       break;
+    case 7:
+      fullBounce();
+      break;
   }
+}
+
+void pin_ISR() {
+  changeMode = true;
 }
 
 void simple() {
@@ -60,6 +66,8 @@ void simple() {
 }
 
 void crawler(int width) {
+  chuck0.sleep = 30;
+  reverseChuck1.sleep = 30;
   int a[chuck0.lights];
   for (int i = 0; i < chuck0.lights; i++) {
 
@@ -79,6 +87,9 @@ void crawler(int width) {
 
     delay(SLEEP);
   }
+
+  chuck0.sleep = SLEEP;
+  reverseChuck1.sleep = SLEEP;
 }
 
 void chaos() {
@@ -114,19 +125,19 @@ void fullBounce() {
 }
 
 void swing() {
-  for (int i = 0; i < random(4) + 2; i++) {
+  for (int i = 0; i < random(4); i++) {
     parallel(chuck0, reverseChuck1);
     parallel(reverseChuck0, chuck1);
   }
-  for (int i = 0; i < random(10) + 2; i++) {
+  for (int i = 0; i < random(10); i++) {
     parallel(chuck0, reverseChuck1);
   }
 
-  for (int i = 0; i < random(4) + 2; i++) {
+  for (int i = 0; i < random(4); i++) {
     parallel(chuck1, reverseChuck0);
     parallel(reverseChuck1, chuck0);
   }
-  for (int i = 0; i < random(10 + 2); i++) {
+  for (int i = 0; i < random(10); i++) {
     parallel(chuck1, reverseChuck0);
   }
 }
