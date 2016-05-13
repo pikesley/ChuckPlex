@@ -1,21 +1,21 @@
 #include <Chuck.h>
 
-#define SLEEP 100
+#define SLEEP 50
 
 const int buttonPin = 2;
 volatile int changeMode = false;
 
 int pinCount = 3;
 
-int leftPins[]  = {  3,  4,  5 }; Chuck left(leftPins, pinCount, SLEEP);
+int leftPins[]  = {  7,  6,  5 }; Chuck left(leftPins, pinCount, SLEEP);
 int rightPins[] = {  8,  9, 10 }; Chuck right(rightPins, pinCount, SLEEP);
 
 int mode = 0;
 
 void setup() {
-  Serial.begin(9600);
   pinMode(buttonPin, INPUT_PULLUP);
   attachInterrupt(0, pin_ISR, FALLING);
+  right.debug(true);
 }
 
 void loop() {
@@ -114,7 +114,7 @@ void chase(Chuck first, Chuck second) {
 
 void chaos() {
   left.lightLed(random(7));
-  delay(random(SLEEP * 4));
+  delay(random(SLEEP * 2));
   right.lightLed(random(7));
-  delay(random(SLEEP * 4));
+  delay(random(SLEEP * 2));
 }
